@@ -9,6 +9,15 @@ async function getPosts(req, res) {
   return res.status(200).json(posts);
 }
 
+async function getPostById(req, res) {
+  const post = await Post.findById(req.body.id);
+  if (!post) {
+    return res.json({"message": "post not found"});
+  }
+
+  return res.json(post);
+}
+
 async function postPosts(req, res) {
   const author = req.user.id;
   if (!author) {
@@ -33,5 +42,6 @@ async function postPosts(req, res) {
 
 export {
   getPosts,
+  getPostById,
   postPosts
 }
