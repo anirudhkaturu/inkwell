@@ -53,6 +53,6 @@ userSchema.methods.comparePassword = async function(pwd) {
 };
 
 // setting email as index
-userSchema.index({ email: 1 });
+userSchema.index({ email: 1});
 
 export default mongoose.model("User", userSchema);

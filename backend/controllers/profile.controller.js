@@ -20,9 +20,9 @@ async function putPfp(req, res) {
 
 async function getLikes(req, res) {
   const userId = req.user.id;
-  const userLikedPosts = await Likes({userId});
+  const userLikedPosts = await Likes.find({user: userId});
 
-  return res.json({userLinkedPosts});
+  return res.json({userLikedPosts});
 }
 
 export {
