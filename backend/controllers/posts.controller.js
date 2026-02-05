@@ -51,6 +51,38 @@ async function postPosts(req, res) {
   });
 }
 
+async function putPost(req, res) {
+  try {
+    const userId = req.user.id;
+    const postId = req.params.id
+    const { content } = req.body;
+
+    if (!content || content.trim().length < 1 || content.length > 5000) {
+      return res.json({message: "invalid content length"});
+    } 
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.json({message: "post does not exist"});
+    }
+
+    if (post.author.toString() !== userId) {
+      return res.json({message: "you are not the author of this post"});
+    }
+
+    post.content = content.trim();
+    await post.save();
+    return res.json({
+      message: "post edited successful",
+      post
+    });
+
+  } catch (err) {
+    console.log("Error: ", err);
+    return res.json({error: err});
+  }
+}
+
 async function toggleLike(req, res) {
   const userId = req.user.id;
   const postId = req.params.postId;
@@ -76,5 +108,6 @@ export {
   getPosts,
   getPostById,
   postPosts,
-  toggleLike
+  toggleLike,
+  putPost
 }
