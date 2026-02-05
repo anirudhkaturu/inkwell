@@ -1,25 +1,37 @@
 import Post from "../models/Post.js";
 import Likes from "../models/Likes.js"
 import Comments from "../models/Comments.js";
+import mongoose from "mongoose";
 
 async function getPosts(req, res) {
-  // pagination 
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  try {
+    // pagination 
+    const limit = 25;
+    const cursor = req.query.c
 
-  const offset = (page - 1) * limit;
+    const query = cursor ? {_id: {$lt: new mongoose.Types.ObjectId(cursor)}} : {};
+    const posts = await Post.find(query)
+      .sort({_id: -1})
+      .limit(limit + 1)
+      .populate("author");
 
-  const posts = await Post.find()
-  .sort({ createdAt: -1 })
-  .skip(offset)
-  .limit(limit)
-  .populate("author", "username");
+    if (posts.length < 1) {
+      return res.json([]);
+    }
 
-  if (posts.length < 1) {
-    return res.json([]);
+    const hasNextPage = posts.length > limit;
+    if (hasNextPage) {
+      posts.pop();
+    }
+
+    return res.status(200).json({
+      posts: posts,
+      nextCursor: hasNextPage ? posts[posts.length - 1]._id : null
+    });
+  } catch (err) {
+    console.log("Error: ", err);
+    return res.json({error: err});
   }
-
-  return res.status(200).json(posts);
 }
 
 async function getPostById(req, res) {
