@@ -12,7 +12,8 @@ async function getPosts(req, res) {
   const posts = await Post.find()
   .sort({ createdAt: -1 })
   .skip(offset)
-  .limit(limit);
+  .limit(limit)
+  .populate("author", "username");
 
   if (posts.length < 1) {
     return res.json([]);
