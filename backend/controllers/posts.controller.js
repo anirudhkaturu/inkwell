@@ -83,6 +83,35 @@ async function putPost(req, res) {
   }
 }
 
+async function deletePost(req, res) {
+  try {
+    const userId = req.user.id;
+    const postId = req.params.id;
+    
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.json({message: "post does not exist"});
+    }
+
+    if (post.author.toString() !== userId) {
+      return res.json({message: "you are not the author of this post"});
+    }
+
+    const deletedPost = await Post.deleteOne({_id: postId, author: userId});
+    if (!deletePost) {
+      return res.json({message: "delete faild, try again later"});
+    }
+
+    return res.json({
+      message: "post deleted successfully",
+      deletePost
+    });
+  } catch (err) {
+    console.log("Error: ", err);
+    return res.json({error: err});
+  }
+}
+
 async function toggleLike(req, res) {
   const userId = req.user.id;
   const postId = req.params.postId;
@@ -109,5 +138,6 @@ export {
   getPostById,
   postPosts,
   toggleLike,
-  putPost
+  putPost,
+  deletePost
 }
