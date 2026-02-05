@@ -21,7 +21,7 @@ async function getPosts(req, res) {
 }
 
 async function getPostById(req, res) {
-  const post = await Post.findById(req.body.id);
+  const post = await Post.findById(req.params.id);
   if (!post) {
     return res.json({"message": "post not found"});
   }
@@ -66,7 +66,7 @@ async function toggleLike(req, res) {
     });
   } else {
     await Likes.deleteOne({user: userId, post: postId});
-    await Post.updateOne({_id: postId}, {$inc: {likes: -1}});
+    await Post.updateOne({_id: postId, likes: { $gt: 0 }}, {$inc: {likes: -1}});
 
     return res.json({message: "unliked"});
   }
