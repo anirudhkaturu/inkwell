@@ -1,5 +1,6 @@
 import Post from "../models/Post.js";
 import Likes from "../models/Likes.js"
+import Comments from "../models/Comments.js";
 
 async function getPosts(req, res) {
   // pagination 
@@ -98,13 +99,15 @@ async function deletePost(req, res) {
     }
 
     const deletedPost = await Post.deleteOne({_id: postId, author: userId});
-    if (!deletePost) {
+    if (!deletedPost.deletedCount === 0) {
       return res.json({message: "delete faild, try again later"});
     }
+    await Likes.deleteMany({ post: postId });
+    await Comments.deleteMany({post: postId});
 
     return res.json({
       message: "post deleted successfully",
-      deletePost
+      deletedPost
     });
   } catch (err) {
     console.log("Error: ", err);
@@ -133,11 +136,38 @@ async function toggleLike(req, res) {
   }
 }
 
+async function postComment(req, res) {
+  try {
+    const userId = req.user.id;
+    const postId = req.params.id;
+
+    const { content } = req.body;
+    if (!content || content.trim().length < 1 || content.length > 300) {
+      return res.json({message: "invalid comment length"});
+    }
+
+    const newComment = await Comments.create({post: postId, user: userId, content: content});
+    if (!newComment) {
+      return res.json({message: "comment post unsuccessful"});
+    }
+
+    return res.json({
+      message: "comment posted successfully",
+      newComment
+    });
+
+  } catch (err) {
+    console.log("Error: ", err);
+    return res.json({error: err});
+  }
+}
+
 export {
   getPosts,
   getPostById,
   postPosts,
   toggleLike,
   putPost,
-  deletePost
+  deletePost,
+  postComment
 }
