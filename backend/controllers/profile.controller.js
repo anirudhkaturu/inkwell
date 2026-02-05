@@ -20,7 +20,7 @@ async function putPfp(req, res) {
 
 async function getLikes(req, res) {
   const userId = req.user.id;
-  const userLikedPosts = await Likes.find({user: userId});
+  const userLikedPosts = await Likes.find({user: userId}).populate("post");
 
   return res.json({userLikedPosts});
 }

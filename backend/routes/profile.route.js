@@ -13,6 +13,6 @@ const router = new Router();
 
 router.get("/", getProfile);
 router.post("/pfp", upload.single("pfp"), putPfp);
-router.get("/likes", getLikes)
+router.get("/likes", getLikes);
 
 export default router;

@@ -61,7 +61,7 @@ export const HomePage = () => {
               <div className="card-body">
                 {/* Author + Date */}
                 <div className="flex justify-between text-sm opacity-60">
-                  <span>Author ID: {post.author}</span>
+                  <span>{post.author.username}</span>
                   <span>{new Date(post.createdAt).toLocaleString()}</span>
                 </div>
 
