@@ -56,7 +56,7 @@ async function postPosts(req, res) {
     }
 
     const { content } = req.body;
-    if (!content || content.length.trim() < 1 || content.length > 5000) {
+    if (!content || content.trim().length < 1 || content.length > 5000) {
       return res.json({ message: "content too long" });
     }
 
@@ -108,34 +108,47 @@ async function putPost(req, res) {
 }
 
 async function deletePost(req, res) {
+  const userId = req.user.id;
+  const postId = req.params.id;
+  
+  // implementing transcation for deleting post,
+  // along with associated comments and likes 
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const userId = req.user.id;
-    const postId = req.params.id;
-    
-    const post = await Post.findById(postId);
+    const opts = { session };
+
+    const post = await Post.findById(postId).session(session);
     if (!post) {
-      return res.json({message: "post does not exist"});
+      throw new Error("Post does not exit");
     }
 
     if (post.author.toString() !== userId) {
-      return res.json({message: "you are not the author of this post"});
+      throw new Error("You are not the author of this post");
+    }
+    
+    const deletedResult = await Post.deleteOne({_id: postId, author: userId}, opts);
+    if (deletedResult.deletedCount === 0) {
+      console.log("Post Delete Failed");
+      throw new Error("post delete failed");
     }
 
-    const deletedPost = await Post.deleteOne({_id: postId, author: userId});
-    if (deletedPost.deletedCount === 0) {
-      return res.json({message: "delete faild, try again later"});
-    }
-    await Likes.deleteMany({ post: postId });
-    await Comments.deleteMany({post: postId});
+    await Likes.deleteMany({post: postId}, opts);
+    await Comments.deleteMany({post: postId}, opts);
+    await session.commitTransaction();
 
-    return res.json({
-      message: "post deleted successfully",
-      deletedPost
-    });
+    console.log("Transcation Successful");
   } catch (err) {
-    console.log("Error: ", err);
-    return res.json({error: err});
+    console.log("Error", err);
+    await session.abortTransaction();
+    console.log("Transaction Failed");
+    return res.json({message: "server error"});
+  } finally {
+    session.endSession();
   }
+
+  return res.json({message: "post deleted successfully"});
 }
 
 async function toggleLike(req, res) {
