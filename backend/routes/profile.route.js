@@ -3,7 +3,8 @@ import multer from "multer";
 import {
   getProfile,
   putPfp,
-  getLikes
+  getLikes,
+  putBio
 } from "../controllers/profile.controller.js"
 
 const upload = multer({
@@ -14,5 +15,6 @@ const router = new Router();
 router.get("/", getProfile);
 router.post("/pfp", upload.single("pfp"), putPfp);
 router.get("/likes", getLikes);
+router.put("/bio", putBio);
 
 export default router;

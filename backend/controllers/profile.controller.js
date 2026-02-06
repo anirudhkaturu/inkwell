@@ -6,7 +6,7 @@ async function getProfile(req, res) {
   const userId = req.user.id
   const userPosts = await Post.find({author: userId});
   
-  if (!userPosts || userPosts.lenght < 1) {
+  if (!userPosts || userPosts.length < 1) {
     return res.json({"message": "you havent posted anything"});
   }
   
@@ -25,8 +25,35 @@ async function getLikes(req, res) {
   return res.json({userLikedPosts});
 }
 
+async function putBio(req, res) {
+  try {
+    const userId = req.user.id;
+    const { bioContent } = req.body;
+    if (!bioContent || bioContent.trim().length < 1 || bioContent.length > 150) {
+      return res.status(400).json({message: "invalid input"});
+    }
+
+    // const updatedUser = await User.updateOne({_id: userId}, { $set: { bio: bioContent.trim() } });
+    
+    const updatedUser = await User.findByIdAndUpdate( // returns updated bio
+      {_id: userId}, 
+      { bio: bioContent.trim() }, 
+      { new: true, select: "bio" }
+    );
+    if (updatedUser.matchedCount === 0) {
+      return res.status(404).json({message: "user not found"});
+    }
+    
+    return res.status(200).json({message: "bio updated successfully"});
+  } catch (err) {
+    console.log("Error: ", err);
+    return res.status(500).json({message: "server error"});
+  }
+}
+
 export {
   getProfile,
   putPfp,
-  getLikes
+  getLikes,
+  putBio
 }
