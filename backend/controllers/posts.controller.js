@@ -13,7 +13,7 @@ async function getPosts(req, res) {
     const posts = await Post.find(query)
       .sort({_id: -1})
       .limit(limit + 1)
-      .populate("author");
+      .populate("author", "username");
 
     if (posts.length < 1) {
       return res.json([]);
@@ -35,34 +35,44 @@ async function getPosts(req, res) {
 }
 
 async function getPostById(req, res) {
-  const post = await Post.findById(req.params.id);
-  if (!post) {
-    return res.json({"message": "post not found"});
-  }
+  try {
+    const post = await Post.findById(req.params.id).populate("author", "username");
+    if (!post) {
+      return res.json({"message": "post not found"});
+    }
 
-  return res.json(post);
+    return res.json(post);
+  } catch (err) {
+    console.log("Error: ", err);
+    return res.json({error: err});
+  }
 }
 
 async function postPosts(req, res) {
-  const author = req.user.id;
-  if (!author) {
-    return res.json({"message": "invalid user"});
-  }
+  try {
+    const author = req.user.id;
+    if (!author) {
+      return res.json({ message: "invalid user" });
+    }
 
-  const { content } = req.body;
-  if (content.length < 1 || content.length > 5000) {
-    return res.json({"message": "content too long"});
-  }
+    const { content } = req.body;
+    if (!content || content.length.trim() < 1 || content.length > 5000) {
+      return res.json({ message: "content too long" });
+    }
 
-  const newPost = await Post.create({author, content});
-  if (!newPost) {
-    return res.json({"message": "error creating post"});
-  }
+    const newPost = await Post.create({ author, content });
+    if (!newPost) {
+      return res.json({ message: "error creating post" });
+    }
 
-  return res.json({
-    "message": "post successful", 
-    newPost
-  });
+    return res.json({
+      message: "post successful",
+      newPost,
+    });
+  } catch (err) {
+    console.log("Error: ", err);
+    return res.json({error: err});
+  }
 }
 
 async function putPost(req, res) {
@@ -112,7 +122,7 @@ async function deletePost(req, res) {
     }
 
     const deletedPost = await Post.deleteOne({_id: postId, author: userId});
-    if (!deletedPost.deletedCount === 0) {
+    if (deletedPost.deletedCount === 0) {
       return res.json({message: "delete faild, try again later"});
     }
     await Likes.deleteMany({ post: postId });
@@ -129,23 +139,29 @@ async function deletePost(req, res) {
 }
 
 async function toggleLike(req, res) {
-  const userId = req.user.id;
-  const postId = req.params.postId;
+  try {
 
-  const isLiked = await Likes.findOne({user: userId, post: postId});
-  if (!isLiked || isLiked == null) {
-    const newLike = await Likes.create({user: userId, post: postId});
-    await Post.updateOne({_id: postId}, {$inc: {likes: 1}});
+    const userId = req.user.id;
+    const postId = req.params.postId;
 
-    return res.json({
-      message: "liked",
-      newLike
-    });
-  } else {
-    await Likes.deleteOne({user: userId, post: postId});
-    await Post.updateOne({_id: postId, likes: { $gt: 0 }}, {$inc: {likes: -1}});
+    const isLiked = await Likes.findOne({user: userId, post: postId});
+    if (!isLiked || isLiked == null) {
+      const newLike = await Likes.create({user: userId, post: postId});
+      await Post.updateOne({_id: postId}, {$inc: {likes: 1}});
 
-    return res.json({message: "unliked"});
+      return res.json({
+        message: "liked",
+        newLike
+      });
+    } else {
+      await Likes.deleteOne({user: userId, post: postId});
+      await Post.updateOne({_id: postId, likes: { $gt: 0 }}, {$inc: {likes: -1}});
+
+      return res.json({message: "unliked"});
+    }
+  } catch (err) {
+    console.log("Error: ", err);
+    return res.json({error: err});
   }
 }
 
