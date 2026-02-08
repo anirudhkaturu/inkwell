@@ -48,6 +48,37 @@ async function getPostById(req, res) {
   }
 }
 
+async function putPost(req, res) {
+  try {
+    const userId = req.user.id;
+    const { content } = req.body;
+    const postId = req.params.id;
+
+    if (!content || content.trim().length < 1 || content.length > 5000) {
+      return res.status(404).json({message: "invalid input"});
+    }
+
+    const post = await Post.findById({postId});
+    if (!post) {
+      return res.json({message: "post not found"});
+    }
+    if (post.author.toString() !== userId) {
+      return res.status(403).json({message: "unauthorized: you do not own this post"});
+    }
+
+    post.content = content.trim();
+    const updatedPost = await post.save();
+
+    return res.status(200).json({
+      message: "post successfully updated",
+      post: updatedPost
+    });
+  } catch (err) {
+    console.log("Error: ", err);
+    return res.json({message: "server error"});
+  }
+}
+
 async function postPosts(req, res) {
   try {
     const author = req.user.id;
@@ -69,38 +100,6 @@ async function postPosts(req, res) {
       message: "post successful",
       newPost,
     });
-  } catch (err) {
-    console.log("Error: ", err);
-    return res.json({error: err});
-  }
-}
-
-async function putPost(req, res) {
-  try {
-    const userId = req.user.id;
-    const postId = req.params.id
-    const { content } = req.body;
-
-    if (!content || content.trim().length < 1 || content.length > 5000) {
-      return res.json({message: "invalid content length"});
-    } 
-
-    const post = await Post.findById(postId);
-    if (!post) {
-      return res.json({message: "post does not exist"});
-    }
-
-    if (post.author.toString() !== userId) {
-      return res.json({message: "you are not the author of this post"});
-    }
-
-    post.content = content.trim();
-    await post.save();
-    return res.json({
-      message: "post edited successful",
-      post
-    });
-
   } catch (err) {
     console.log("Error: ", err);
     return res.json({error: err});
