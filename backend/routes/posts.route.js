@@ -6,7 +6,8 @@ import {
   toggleLike,
   putPost,
   deletePost,
-  postComment
+  postComment,
+  getCommentsForPost
 } from "../controllers/posts.controller.js"
 
 const router = new Router();
@@ -17,6 +18,7 @@ router.post("/", postPosts);
 router.post("/:postId/like", toggleLike);
 router.put("/:id/edit", putPost);
 router.delete("/:id/delete", deletePost);
-router.post("/:id/comment", postComment)
+router.post("/:id/comment", postComment);
+router.get("/:id", getCommentsForPost);
 
 export default router;

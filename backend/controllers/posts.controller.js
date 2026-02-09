@@ -82,10 +82,6 @@ async function putPost(req, res) {
 async function postPosts(req, res) {
   try {
     const author = req.user.id;
-    if (!author) {
-      return res.json({ message: "invalid user" });
-    }
-
     const { content } = req.body;
     if (!content || content.trim().length < 1 || content.length > 5000) {
       return res.json({ message: "content too long" });
@@ -203,6 +199,49 @@ async function postComment(req, res) {
   }
 }
 
+async function getCommentsForPost(req, res) {
+  try {
+    const postId = req.params.id;
+    const limit = 25;
+    const cursor = req.query.c;
+
+    if (cursor && !mongoose.Types.ObjectId.isValid(cursor)) {
+      return res.status(400).json({message: "invalid cursor"});
+    }
+
+    const query = { post: postId };
+    if (cursor) {
+      query._id = { $lt: new mongoose.Types.ObjectId(cursor) };
+    }
+
+    const comments = await Comments.find(query)
+      .sort({_id: -1})
+      .limit(limit + 1)
+      .populate("user", "_id username");
+
+    if (comments.length === 0) {
+      return res.status(200).json({
+        comments: [],
+        nextCursor: null
+      });
+    }
+
+    const hasNextPage = comments.length > limit;
+    if (hasNextPage) {
+      comments.pop()
+    }
+
+    return res.status(200).json({
+      comments: comments,
+      nextCursor: hasNextPage ? comments[comments.length - 1]._id : null
+    });
+
+  } catch (err) {
+    console.log("Error: ", err);
+    return res.status(500).json({message: "server error"});
+  }
+}
+
 export {
   getPosts,
   getPostById,
@@ -210,5 +249,6 @@ export {
   toggleLike,
   putPost,
   deletePost,
-  postComment
+  postComment,
+  getCommentsForPost
 }
