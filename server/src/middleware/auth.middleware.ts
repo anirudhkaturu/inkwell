@@ -19,12 +19,10 @@ export const protect = async (
   let token: string | undefined;
 
   // 1. Check for token in the Authorization header
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
-  }
+  token = req.cookies.inkwell_auth_token;
+
+  // console.log("Cookies:", req.cookies);
+  // console.log("Token:", req.cookies.inkwell_auth_token);
 
   // 2. If no token, reject
   if (!token) {
