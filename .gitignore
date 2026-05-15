@@ -1,0 +1,64 @@
+# =========================
+# Dependencies
+# =========================
+node_modules/
+server/node_modules/
+client/node_modules/
+
+# =========================
+# Build outputs
+# =========================
+server/dist/
+client/dist/
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# =========================
+# Environment variables
+# =========================
+.env
+server/.env
+client/.env
+
+# Optional example env file (KEEP THIS)
+!.env.example
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# =========================
+# OS junk
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Editors
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Vite / React cache
+# =========================
+client/.vite/
+client/node_modules/.vite/
+client/node_modules/.cache/
+
+# =========================
+# Coverage / testing
+# =========================
+coverage/
+
+# =========================
+# Deployment artifacts
+# =========================
+.vercel/
+netlify/

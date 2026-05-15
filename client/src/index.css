@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* GLOBAL THEME VARIABLES */
+:root {
+  --bg: 255 255 255;
+  --text: 24 24 27;
+  --border: 228 228 231;
+}
+
+.dark {
+  --bg: 9 9 11;
+  --text: 255 255 255;
+  --border: 39 39 42;
+}
+
+/* APPLY GLOBALLY */
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--text));
+  transition: background-color 300ms, color 300ms;
+}
