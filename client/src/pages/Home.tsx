@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import UserCard from "../components/UserCard";
 
+import { type IUser } from "../types/user";
+
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function Home() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<IUser | null>(null);
 
   useEffect(() => {
     const fetchMe = async () => {
@@ -55,7 +57,7 @@ export default function Home() {
               </h1>
 
               <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-                Welcome {user.phone}
+                Welcome {user.username}
               </p>
             </div>
           </div>
@@ -66,7 +68,6 @@ export default function Home() {
           <div className="sticky top-8">
             <UserCard
               username={user.username || "user"}
-              fullName={user.phone}
               bio="Writing quietly into the void."
               profilePicture={user.profilePicture}
             />
