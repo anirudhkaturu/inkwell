@@ -6,6 +6,7 @@ export interface IUser {
   phone: string;
   password: string;
   isVerified: boolean;
+  bio: string;
   role: "user" | "admin";
   createdAt: Date;
   updatedAt: Date;

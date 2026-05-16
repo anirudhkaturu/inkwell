@@ -54,3 +54,52 @@ export async function putUsername(
     });
   }
 }
+
+export async function putBio(
+  req: Request<{}, {}, { bio: string }> & { user?: IUser }, 
+  res: Response
+) {
+  try {
+
+    if(!req.user) {
+      return res.json({
+        message: "User Not Authorized"
+      });
+    }
+
+    const { bio } = req.body;
+    if(!bio) {
+      return res.json({
+        message: "Invalid Input"
+      });
+    }
+
+    if(bio.length <= 1 && bio.length >= 150) {
+      return res.json({
+        message: "Bio not of appropriate length"
+      });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { bio },
+      { new: true }
+    );
+
+    if(!updatedUser) {
+      return res.json({
+        message: "Bio Update Failed"
+      });
+    }
+
+    return res.json({
+      message: "Bio Updated Successfully"
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "Server error",
+    });
+  }
+}
