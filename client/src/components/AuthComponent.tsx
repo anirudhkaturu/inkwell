@@ -51,19 +51,22 @@ export default function AuthComponent() {
           ? `${BACKEND_URL}/api/auth/login`
           : `${BACKEND_URL}/api/auth/signup`;
 
-      const { data } = await axios.post(
+      await axios.post(
         endpoint,
         {
           phone: phone.trim(),
           password,
         },
         {
-          withCredentials: true,
+          withCredentials: true, // 🔥 IMPORTANT: sends/receives cookie
         },
       );
 
-      // save token
-      localStorage.setItem("token", data.token);
+      // ❌ no localStorage token anymore
+      // cookie is stored automatically by browser
+
+      // OPTIONAL: fetch user if you want onboarding check immediately
+      // await axios.get(`${BACKEND_URL}/api/auth/me`, { withCredentials: true });
 
       navigate("/home");
     } catch (err: unknown) {

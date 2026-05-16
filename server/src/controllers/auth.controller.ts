@@ -1,4 +1,4 @@
-import { type Request, type Response } from "express"
+import { response, type Request, type Response } from "express"
 import { User } from "../models/User.js"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -39,9 +39,15 @@ export async function postLogin(req: Request, res: Response) {
       },
     );
 
-    return res.status(200).json({
-      message: "Logged in Successfully",
-      token
+    return res.status(200).cookie(
+      "inkwell_auth_token",
+      token,
+      {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      },
+    ).json({
+      message: "Logged in Successfully"
     });
 
   } catch (err) {
@@ -82,15 +88,34 @@ export async function postSignup(req: Request, res: Response) {
       expiresIn: "7d",
     });
     
-    return res.status(201).json(
-    { message: "Account Created Successfully", 
-      token, 
-      createdUser 
-    });
+    return res.status(201).cookie(
+      "inkwell_auth_token",
+      token,
+      {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      },
+    ).json(
+    { message: "Account Created Successfully" });
 
   } catch (err) {
     return res.status(500).json({
       message: "Server Error",
     });
   }
+}
+
+export async function getMe(req: Request, res: Response) {
+  
+  if(!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: "Not Authroized"
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    user: req.user
+  });
 }

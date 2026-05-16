@@ -6,7 +6,6 @@ import cors from "cors";
 import { connectDB } from "./config/mongodb.js";
 
 import authRouter from "./routes/auth.router.js";
-import userRouter from "./routes/user.router.js";
 
 dotenv.config();
 
@@ -31,7 +30,6 @@ app.use(
 );
 
 app.use("/api/auth", authRouter);
-app.use("/api/users", userRouter);
 
 const startServer = async () => {
   try {
