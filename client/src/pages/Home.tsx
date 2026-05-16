@@ -15,7 +15,7 @@ export default function Home() {
     const fetchMe = async () => {
       try {
         const { data } = await axios.get(`${BACKEND_URL}/api/auth/me`, {
-          withCredentials: true, // 🔥 sends cookie
+          withCredentials: true, // sends cookie
         });
 
         setUser(data.user);

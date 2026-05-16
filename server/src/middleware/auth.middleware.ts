@@ -1,12 +1,13 @@
 import { type Request, type Response, type NextFunction } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
-import { User } from "../models/User.js"; // adjust the import path as needed
+import { User } from "../models/User.js"; 
+import { type IUser } from "../types/user.js";
 
 // Extend Express Request type to include our user property
 declare global {
   namespace Express {
     interface Request {
-      user?: any; // You can replace `any` with a proper User document type
+      user?: IUser; 
     }
   }
 }
