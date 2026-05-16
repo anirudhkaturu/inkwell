@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { type IUser } from "../types/user.js";
+import { kMaxLength } from "node:buffer";
 
 const userSchema = new mongoose.Schema<IUser>(
   {
@@ -46,6 +47,14 @@ const userSchema = new mongoose.Schema<IUser>(
     isVerified: {
       type: Boolean,
       default: false,
+    },
+
+    bio: {
+      type: String,
+      minLength: 1,
+      maxLength: 150,
+      default: "",
+      trim: true
     },
 
     role: {
