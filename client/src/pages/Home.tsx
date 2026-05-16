@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import UserCard from "../components/UserCard";
+import Feed from "../components/Feed";
+import { type IUser } from "../types/user";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -9,7 +11,7 @@ export default function Home() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<IUser | null>(null);
 
   useEffect(() => {
     const fetchMe = async () => {
@@ -48,17 +50,7 @@ export default function Home() {
       <div className="mx-auto flex max-w-7xl gap-10 px-6 py-8">
         {/* Feed Section */}
         <main className="flex flex-1 justify-center">
-          <div className="w-full max-w-2xl">
-            <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-                Home Feed
-              </h1>
-
-              <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-                Welcome {user.phone}
-              </p>
-            </div>
-          </div>
+          <Feed user={user}/>
         </main>
 
         {/* Right Sidebar */}
@@ -66,7 +58,6 @@ export default function Home() {
           <div className="sticky top-8">
             <UserCard
               username={user.username || "user"}
-              fullName={user.phone}
               bio="Writing quietly into the void."
               profilePicture={user.profilePicture}
             />
