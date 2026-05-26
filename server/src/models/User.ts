@@ -40,10 +40,14 @@ const userSchema = new mongoose.Schema<IUser>(
 
     bio: {
       type: String,
-      minLength: 1,
       maxLength: 150,
       default: "",
       trim: true
+    },
+
+    onboardingDone: {
+      type: Boolean,
+      default: false
     }
   },
   {

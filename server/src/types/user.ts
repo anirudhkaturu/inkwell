@@ -5,6 +5,8 @@ export interface IUser {
   phone: string;
   password: string;
   bio: string;
+  // onboarding field
+  onboardingDone: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
