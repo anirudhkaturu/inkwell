@@ -70,18 +70,18 @@ export const protect = async (
 };
 
 // Optional role‑based authorization middleware
-export const authorize = (...roles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.user) {
-      res.status(401).json({ message: "Not authenticated" });
-      return;
-    }
-    if (!roles.includes(req.user.role)) {
-      res.status(403).json({
-        message: `Role (${req.user.role}) is not allowed to access this resource`,
-      });
-      return;
-    }
-    next();
-  };
-};
+// export const authorize = (...roles: string[]) => {
+//   return (req: Request, res: Response, next: NextFunction): void => {
+//     if (!req.user) {
+//       res.status(401).json({ message: "Not authenticated" });
+//       return;
+//     }
+//     if (!roles.includes(req.user.role)) {
+//       res.status(403).json({
+//         message: `Role (${req.user.role}) is not allowed to access this resource`,
+//       });
+//       return;
+//     }
+//     next();
+//   };
+// };

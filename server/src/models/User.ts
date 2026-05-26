@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { type IUser } from "../types/user.js";
-import { kMaxLength } from "node:buffer";
 
 const userSchema = new mongoose.Schema<IUser>(
   {
@@ -16,11 +15,6 @@ const userSchema = new mongoose.Schema<IUser>(
         /^[a-zA-Z0-9._]+$/,
         "Username can only contain letters, numbers, dots and underscores",
       ],
-    },
-
-    isProfileComplete: {
-      type: Boolean,
-      default: false,
     },
 
     profilePicture: {
@@ -44,24 +38,13 @@ const userSchema = new mongoose.Schema<IUser>(
       select: false,
     },
 
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-
     bio: {
       type: String,
       minLength: 1,
       maxLength: 150,
       default: "",
       trim: true
-    },
-
-    role: {
-      type: String,
-      enum: ["user", "admin"],
-      default: "user",
-    },
+    }
   },
   {
     timestamps: true,

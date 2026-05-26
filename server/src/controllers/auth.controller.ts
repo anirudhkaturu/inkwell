@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express"
 import { User } from "../models/User.js"
+import { OnboardingPending } from "../models/OnboardingPending.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -14,10 +15,19 @@ export async function postLogin(req: Request, res: Response) {
       return res.status(400).json({ message: "Enter Complete Details" });
     }
 
-    const user = await User.findOne({ phone }).select("+password");
-    if(!user) {
-      return res.status(404).json({ message: "User not found" });
+    let user = await User.findOne({ phone }).select("+password");
+    let isOnboardingPending = false;
+    
+    if (!user) {
+      user = await OnboardingPending.findOne({ phone }).select("+password");
+      isOnboardingPending = true;
     }
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: "Invalid phone number or password" });
+    } 
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -30,8 +40,8 @@ export async function postLogin(req: Request, res: Response) {
     const token = jwt.sign(
       {
         id: user._id,
-        username: user.username,
-        isProfileComplete: user.isProfileComplete, // for onboarding process
+        username: user.username || null,
+        isProfileComplete: !isOnboardingPending
       },
       process.env.JWT_SECRET as string,
       {
@@ -65,13 +75,17 @@ export async function postSignup(req: Request, res: Response) {
       return res.status(400).json({ message: "Enter Complete Details" });
     }
 
-    const phoneExists = await User.findOne({ phone });
-    if(phoneExists) {
+    const [phoneExistsInPending, phoneExistsInUsers] = await Promise.all([
+      OnboardingPending.findOne({ phone }).select("_id"),
+      User.findOne({ phone }).select("_id"),
+    ]);
+
+    if(phoneExistsInPending || phoneExistsInUsers) {
       return res.status(409).json({ message: "Account with that number already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const createdUser = await User.create({
+    const createdUser = await OnboardingPending.create({
       phone, 
       password: hashedPassword
     });
@@ -80,8 +94,8 @@ export async function postSignup(req: Request, res: Response) {
     const token = jwt.sign(
     {
       id: createdUser._id,
-      username: createdUser.username,
-      isProfileCompleted: createdUser.isProfileComplete
+      username: null,
+      isProfileComplete: false
     }, 
     process.env.JWT_SECRET as string,
     {
@@ -100,7 +114,7 @@ export async function postSignup(req: Request, res: Response) {
 
   } catch (err) {
     return res.status(500).json({
-      message: "Server Error",
+      message: "Server Error"
     });
   }
 }
