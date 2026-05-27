@@ -7,6 +7,7 @@ import { connectDB } from "./config/mongodb.js";
 
 import authRouter from "./routes/auth.router.js";
 import onboardingRouter from "./routes/onboarding.router.js";
+import profileRouter from "./routes/profile.router.js";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use(
 
 app.use("/api/auth", authRouter);
 app.use("/api/onboard", onboardingRouter);
+app.use("/api/profile", profileRouter);
 
 const startServer = async () => {
   try {

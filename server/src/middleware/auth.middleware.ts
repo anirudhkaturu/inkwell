@@ -44,7 +44,7 @@ export const protect = async (
     const decoded = jwt.verify(token, secret) as JwtPayload & { id: string };
 
     // 4. Find the user by id from the token payload (exclude password)
-    const user = await User.findById(decoded.id).select("-password");
+    const user = await User.findById(decoded.id).select("-password -phone");
 
     if (!user) {
       res.status(401).json({
