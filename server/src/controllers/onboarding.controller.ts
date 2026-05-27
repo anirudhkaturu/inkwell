@@ -1,6 +1,10 @@
 import { type Request, type Response } from "express";
 import { User } from "../models/User.js";
 import { type IUser } from "../types/user.js";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export async function putUsername(
   req: Request<{}, {}, { username: string }> & { user?: IUser }, 
@@ -31,8 +35,8 @@ export async function putUsername(
 
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
-      { username },
-      { new: true },
+      { username, onboardingDone: true },
+      { new: true},
     );
 
     if(!updatedUser) {
@@ -41,62 +45,28 @@ export async function putUsername(
       });
     }
 
-    return res.status(200).json({
+    // redo the token after username is set
+    const token = jwt.sign({
+      id: updatedUser.id,
+      username: updatedUser.username,
+      isOnboardingComplete: updatedUser.onboardingDone
+    }, process.env.JWT_SECRET as string, {
+      expiresIn: "7d"
+    });
+
+    return res
+    .status(200)
+    .cookie("inkwell_auth_token", token, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+    })
+    .json({
       success: true,
-      message: "Username saved",
+      message: "Username saved and Session Updated",
       user: updatedUser,
     });
-
+    
   } catch(err) {
-    console.log(err);
-    return res.status(500).json({
-      message: "Server error",
-    });
-  }
-}
-
-export async function putBio(
-  req: Request<{}, {}, { bio: string }> & { user?: IUser }, 
-  res: Response
-) {
-  try {
-
-    if(!req.user) {
-      return res.json({
-        message: "User Not Authorized"
-      });
-    }
-
-    const { bio } = req.body;
-    if(!bio) {
-      return res.json({
-        message: "Invalid Input"
-      });
-    }
-
-    if(bio.length <= 1 && bio.length >= 150) {
-      return res.json({
-        message: "Bio not of appropriate length"
-      });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      { bio },
-      { new: true }
-    );
-
-    if(!updatedUser) {
-      return res.json({
-        message: "Bio Update Failed"
-      });
-    }
-
-    return res.json({
-      message: "Bio Updated Successfully"
-    });
-
-  } catch (err) {
     console.log(err);
     return res.status(500).json({
       message: "Server error",
