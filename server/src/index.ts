@@ -9,6 +9,10 @@ import authRouter from "./routes/auth.router.js";
 import onboardingRouter from "./routes/onboarding.router.js";
 import profileRouter from "./routes/profile.router.js";
 
+// new postgres db
+import pg from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
+
 dotenv.config();
 
 const app = express();
@@ -34,6 +38,11 @@ app.use(
 app.use("/api/auth", authRouter);
 app.use("/api/onboard", onboardingRouter);
 app.use("/api/profile", profileRouter);
+
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL
+});
+const db = drizzle({ client: pool });
 
 const startServer = async () => {
   try {
