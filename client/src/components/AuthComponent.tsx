@@ -12,6 +12,16 @@ type ApiError = {
   message?: string;
 };
 
+// 1. Defined type representing your finalized backend JSON payload schema
+type AuthResponse = {
+  message: string;
+  user: {
+    id: number;
+    username: string | null;
+    onboarding: boolean;
+  };
+};
+
 export default function AuthComponent() {
   const navigate = useNavigate();
 
@@ -51,7 +61,8 @@ export default function AuthComponent() {
           ? `${BACKEND_URL}/api/auth/login`
           : `${BACKEND_URL}/api/auth/signup`;
 
-      await axios.post(
+      // 2. Added the AuthResponse type generic to capture backend properties
+      const response = await axios.post<AuthResponse>(
         endpoint,
         {
           phone: phone.trim(),
@@ -62,13 +73,15 @@ export default function AuthComponent() {
         },
       );
 
-      // ❌ no localStorage token anymore
-      // cookie is stored automatically by browser
+      // 3. Extract the onboarding completion state cleanly
+      const isOnboardingComplete = response.data.user?.onboarding;
 
-      // OPTIONAL: fetch user if you want onboarding check immediately
-      // await axios.get(`${BACKEND_URL}/api/auth/me`, { withCredentials: true });
-
-      navigate("/home");
+      // 4. Evaluate and redirect to /onboarding if false, otherwise go /home
+      if (isOnboardingComplete) {
+        navigate("/home");
+      } else {
+        navigate("/onboarding");
+      }
     } catch (err: unknown) {
       const error = err as AxiosError<ApiError>;
 

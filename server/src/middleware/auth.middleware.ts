@@ -1,12 +1,11 @@
 import { type Request, type Response, type NextFunction } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
-import { type IUser } from "../types/user.js";
 
 // interface type for jwt
 export interface IUserSession {
   id: string;
   username: string | undefined;
-  isOnboardingComplete: boolean;
+  onboarding: boolean;
 }
 
 declare global {
@@ -20,7 +19,7 @@ declare global {
 interface CustomJwtPayload extends JwtPayload {
   id: string;
   username?: string | null;
-  isOnboardingComplete: boolean;
+  onboarding: boolean;
 }
 
 export const protect = async (
@@ -50,7 +49,7 @@ export const protect = async (
     req.user = {
       id: decoded.id,
       username: decoded.username ?? undefined,
-      isOnboardingComplete: decoded.isOnboardingComplete,
+      onboarding: decoded.onboarding,
     };
 
     next();

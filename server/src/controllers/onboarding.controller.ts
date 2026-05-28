@@ -42,7 +42,7 @@ export async function putUsername(req: Request, res: Response) {
       .update(usersTable)
       .set({
         username: username,
-        onboardingDone: true,
+        onboarding: true,
       })
       .where(eq(usersTable.id, Number(req.user.id)))
       .returning();
@@ -59,7 +59,7 @@ export async function putUsername(req: Request, res: Response) {
     const token = jwt.sign({
       id: updatedUser.id,
       username: updatedUser.username,
-      isOnboardingComplete: updatedUser.onboardingDone
+      onboarding: updatedUser.onboarding
     }, process.env.JWT_SECRET as string, {
       expiresIn: "7d"
     });
