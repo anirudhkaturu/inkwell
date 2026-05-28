@@ -1,8 +1,12 @@
 import { type Request, type Response } from "express"
-import { User } from "../models/User.js"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+
+// postgres migration
+import { usersTable, type IUser, type NewUser } from "../db/schema.js";
+import { db } from "../config/postgres.js";
+import { eq } from "drizzle-orm";
 
 dotenv.config();
 
@@ -14,7 +18,13 @@ export async function postLogin(req: Request, res: Response) {
       return res.status(400).json({ message: "Enter Complete Details" });
     }
 
-    const user = await User.findOne({ phone }).select("+password");
+    const userResult: IUser[] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.phone, phone))
+      .limit(1);
+
+    const user: IUser | undefined = userResult[0];
 
     if (!user) {
       return res
@@ -32,7 +42,7 @@ export async function postLogin(req: Request, res: Response) {
     // create token
     const token = jwt.sign(
       {
-        id: user._id,
+        id: user.id,
         username: user.username || null,
         isOnboardingComplete: user.onboardingDone
       },
@@ -68,21 +78,31 @@ export async function postSignup(req: Request, res: Response) {
       return res.status(400).json({ message: "Enter Complete Details" });
     }
 
-    const phoneExists = await User.findOne({ phone }).select("_id");
-    if(phoneExists) {
+    const phoneExists: IUser[] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.phone, phone))
+      .limit(1);
+    
+    if(phoneExists.length > 0) {
       return res.status(409).json({ message: "Account with that number already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const createdUser = await User.create({
-      phone, 
+
+    const insertData: NewUser = {
+      phone,
       password: hashedPassword
-    });
+    }
+    const createdUserArray: IUser[] = await db.insert(usersTable).values(insertData).returning();
+    
+    // non-null assertion
+    const createdUser: IUser = createdUserArray[0]!;
 
     // generate token
     const token = jwt.sign(
     {
-      id: createdUser._id,
+      id: createdUser.id,
       username: null,
       isOboardingComplete: false
     }, 
