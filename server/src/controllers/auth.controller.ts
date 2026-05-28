@@ -104,7 +104,7 @@ export async function postSignup(req: Request, res: Response) {
     {
       id: createdUser.id,
       username: null,
-      isOboardingComplete: false
+      isOnboardingComplete: false
     }, 
     process.env.JWT_SECRET as string,
     {
