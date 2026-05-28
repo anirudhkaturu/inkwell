@@ -44,7 +44,7 @@ export async function putUsername(req: Request, res: Response) {
         username: username,
         onboarding: true,
       })
-      .where(eq(usersTable.id, Number(req.user.id)))
+      .where(eq(usersTable.id, req.user.id))
       .returning();
 
     const updatedUser: IUser | undefined = updatedUserArray[0];   

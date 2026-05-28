@@ -16,7 +16,7 @@ export async function getProfile(req: Request, res: Response) {
     const usersArray: IUser[] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.id, Number(req.user.id)))
+    .where(eq(usersTable.id, req.user.id))
     .limit(1);
 
     const tempUser: IUser | undefined = usersArray[0];
@@ -73,7 +73,7 @@ export async function putBio(req: Request, res: Response) {
       .set({
         bio: trimmedBio
       })
-      .where(eq(usersTable.id, Number(req.user.id)))
+      .where(eq(usersTable.id, req.user.id))
       .returning();
 
     const updatedBio: IUser | undefined = updatedBioArray[0];
