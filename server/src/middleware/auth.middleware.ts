@@ -6,7 +6,7 @@ import { type IUser } from "../types/user.js";
 export interface IUserSession {
   id: string;
   username: string | undefined;
-  onboardingDone: boolean;
+  isOnboardingComplete: boolean;
 }
 
 declare global {
@@ -20,7 +20,7 @@ declare global {
 interface CustomJwtPayload extends JwtPayload {
   id: string;
   username?: string | null;
-  onboardingDone: boolean;
+  isOnboardingComplete: boolean;
 }
 
 export const protect = async (
@@ -50,7 +50,7 @@ export const protect = async (
     req.user = {
       id: decoded.id,
       username: decoded.username ?? undefined,
-      onboardingDone: decoded.onboardingDone,
+      isOnboardingComplete: decoded.isOnboardingComplete,
     };
 
     next();
