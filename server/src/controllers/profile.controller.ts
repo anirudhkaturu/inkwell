@@ -1,11 +1,9 @@
 import { type Request, type Response } from "express";
-import { User } from "../models/User.js";
-import { type IUser } from "../types/user.js";
+import { db } from "../config/postgres.js";
+import { usersTable, type IUser } from "../db/schema.js";
+import { eq } from "drizzle-orm";
 
-export async function getProfile(
-  req: Request<{}, {}, { user?: IUser }>, 
-  res: Response
-) {
+export async function getProfile(req: Request, res: Response) {
   try {
 
     if(!req.user) {
@@ -15,9 +13,26 @@ export async function getProfile(
       });
     }
 
+    const usersArray: IUser[] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, Number(req.user.id)))
+    .limit(1);
+
+    const tempUser: IUser | undefined = usersArray[0];
+    
+    if (!tempUser) {
+      return res.status(401).json({
+        success: false,
+        message: "User Not Found"
+      });
+    }
+
+    const { password, phone, ...safeUser } = tempUser;
+
     return res.status(200).json({
-      succes: true,
-      user: req.user
+      success: true,
+      user: safeUser
     });
 
   } catch (err) {
@@ -29,10 +44,7 @@ export async function getProfile(
   }
 }
 
-export async function putBio(
-  req: Request<{}, {}, { bio: string } & { user?: IUser }>, 
-  res: Response
-) {
+export async function putBio(req: Request, res: Response) {
   try {
     
     if (!req.user) {
@@ -56,11 +68,15 @@ export async function putBio(
       });
     }
 
-    const updatedBio = await User.findByIdAndUpdate(
-      req.user.id,
-      { bio: trimmedBio },
-      { new: true }
-    );
+    const updatedBioArray: IUser[] = await db
+      .update(usersTable)
+      .set({
+        bio: trimmedBio
+      })
+      .where(eq(usersTable.id, Number(req.user.id)))
+      .returning();
+
+    const updatedBio: IUser | undefined = updatedBioArray[0];
 
     if (!updatedBio) {
       return res.status(404).json({
