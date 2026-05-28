@@ -44,7 +44,7 @@ export async function postLogin(req: Request, res: Response) {
       {
         id: user.id,
         username: user.username || null,
-        isOnboardingComplete: user.onboardingDone
+        onboarding: user.onboarding
       },
       process.env.JWT_SECRET as string,
       {
@@ -52,16 +52,20 @@ export async function postLogin(req: Request, res: Response) {
       },
     );
 
-    return res.status(200).cookie(
-      "inkwell_auth_token",
-      token,
-      {
+    return res
+      .status(200)
+      .cookie("inkwell_auth_token", token, {
         httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000
-      },
-    ).json({
-      message: "Logged in Successfully"
-    });
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({
+        message: "Logged in Successfully",
+        user: {
+          id: user.id,
+          username: user.username,
+          onboarding: user.onboarding
+        },
+      });
 
   } catch (err) {
     return res.status(500).json({
@@ -104,22 +108,27 @@ export async function postSignup(req: Request, res: Response) {
     {
       id: createdUser.id,
       username: null,
-      isOnboardingComplete: false
+      onboarding: false
     }, 
     process.env.JWT_SECRET as string,
     {
       expiresIn: "7d",
     });
     
-    return res.status(201).cookie(
-      "inkwell_auth_token",
-      token,
-      {
+    return res
+      .status(201)
+      .cookie("inkwell_auth_token", token, {
         httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000
-      },
-    ).json(
-    { message: "Account Created Successfully" });
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({
+        message: "Account Created Successfully",
+        user: {
+          id: createdUser.id,
+          username: createdUser.username,
+          onboarding: createdUser.onboarding,
+        },
+      });
 
   } catch (err) {
     return res.status(500).json({

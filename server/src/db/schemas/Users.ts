@@ -8,7 +8,7 @@ export const usersTable = pgTable("users", {
   password: varchar({ length: 255 }).notNull(),
   bio: varchar({ length: 150 }).default(""),
   profilePicture: varchar().default(""), 
-  onboardingDone: boolean().default(false).notNull(),
+  onboarding: boolean().default(false).notNull(),
 
   // timestamp for account creation
   createdAt: timestamp("created_at").defaultNow().notNull(),
