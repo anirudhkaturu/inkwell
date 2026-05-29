@@ -11,17 +11,39 @@ dotenv.config();
 export async function putUsername(req: Request, res: Response) {
   try {
 
-    const { username } = req.body; 
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Un-Authenticaed User",
+      });
+    }
+
+    const { username }: { username: string } = req.body; 
     if(!username) {
       return res.status(400).json({
         message: "Input Invalid"
       });
     }
 
+    const newUsername = username.trim();
+    if (newUsername.length > 1 || newUsername.length > 24) {
+      return res.status(400).json({
+        success: false,
+        message: "Username Must be Within 1 and 24 characters",
+      });
+    }
+
+    const usernameRegEx: RegExp = /^[a-zA-Z0-9_]+$/;
+    if (!usernameRegEx.test(newUsername)) {
+      return res.status(400).json({
+        success: false,
+        message: "Username can only contain letters, numbers, and underscores",
+      });
+    }
+
     const usernameExistsArray: IUser[] = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.username, username))
+      .where(eq(usersTable.username, newUsername))
       .limit(1);
     
     const usernameExists: IUser | undefined = usernameExistsArray[0]; 
@@ -32,16 +54,10 @@ export async function putUsername(req: Request, res: Response) {
       });
     }
 
-    if (!req.user) {
-      return res.status(401).json({
-        message: "Un-Authenticaed User",
-      });
-    }
-
     const updatedUserArray: IUser[] = await db
       .update(usersTable)
       .set({
-        username: username,
+        username: newUsername,
         onboarding: true,
       })
       .where(eq(usersTable.id, req.user.id))
