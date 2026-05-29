@@ -116,10 +116,18 @@ export async function putUsername(req: Request, res: Response) {
     }
 
     const newUsername = username.trim();
-    if (newUsername.length === 0 || newUsername.length > 24) {
+    if (newUsername.length > 1 || newUsername.length > 24) {
       return res.status(400).json({
         success: false,
         message: "Username Must be Within 1 and 24 characters",
+      });
+    }
+
+    const usernameRegEx: RegExp = /^[a-zA-Z0-9_]+$/;
+    if (!usernameRegEx.test(newUsername)) {
+      return res.status(400).json({
+        success: false,
+        message: "Username can only contain letters, numbers, and underscores",
       });
     }
 
