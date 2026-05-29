@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Moon, Sparkles, Sun } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
 import { useTheme } from "../hooks/useTheme";
 
 type UserCardProps = {
@@ -16,12 +17,15 @@ export default function UserCard({
   profilePicture,
 }: UserCardProps) {
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate(); // 2. Initialize navigate
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{ duration: 0.5 }}
+      whileHover={{ y: -2 }} // Optional: adds a nice hover lift
+      onClick={() => navigate("/profile")} // 3. Handle navigation
       className="
         relative overflow-hidden rounded-3xl
         border border-zinc-200 dark:border-zinc-800
@@ -29,7 +33,8 @@ export default function UserCard({
         backdrop-blur-xl
         p-6 shadow-sm
         transition-colors duration-300
-      "
+        cursor-pointer selection:bg-transparent 
+      " // 4. Added cursor-pointer
     >
       {/* Ambient glow */}
       <motion.div
@@ -100,7 +105,10 @@ export default function UserCard({
         <motion.button
           whileTap={{ scale: 0.92 }}
           whileHover={{ scale: 1.05 }}
-          onClick={toggleTheme}
+          onClick={(e) => {
+            e.stopPropagation(); // 5. CRITICAL: Prevents the card click from firing
+            toggleTheme();
+          }}
           className="
             rounded-full
             border border-zinc-300 dark:border-zinc-700
@@ -109,6 +117,7 @@ export default function UserCard({
             text-zinc-900 dark:text-white
             backdrop-blur
             transition-colors
+            relative z-10
           "
         >
           {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
