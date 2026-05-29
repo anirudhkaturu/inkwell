@@ -98,3 +98,70 @@ export async function putBio(req: Request, res: Response) {
     });
   }
 }
+
+export async function putUsername(req: Request, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Un-Authenticaed User",
+      });
+    }
+
+    const { username }: { username: string } = req.body;
+    if (!username) {
+      return res.status(400).json({
+        message: "invalid input",
+      });
+    }
+
+    const newUsername = username.trim();
+    if (newUsername.length === 0 || newUsername.length > 24) {
+      return res.status(400).json({
+        success: false,
+        message: "Username Must be Within 1 and 24 characters",
+      });
+    }
+
+    const usersExistsArray: IUser[] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.username, newUsername))
+      .limit(1);
+    const userExists: IUser | undefined = usersExistsArray[0];
+
+    if (userExists) {
+      return res.status(400).json({
+        success: false,
+        message: "That Username is Already Taken, Try Another One",
+      });
+    }
+
+    const usernameUpdateArray: IUser[] = await db
+      .update(usersTable)
+      .set({
+        username: newUsername,
+      })
+      .where(eq(usersTable.id, req.user.id))
+      .returning();
+    const usernameUpdate: IUser | undefined = usernameUpdateArray[0];
+
+    if (!usernameUpdate) {
+      return res.status(404).json({
+        success: false,
+        message: "Username Update Un-Successful",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Username Successfully Updated",
+    });
+  } catch (error) {
+    console.error("Error in putUsername controller:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+}
