@@ -5,8 +5,7 @@ import { eq } from "drizzle-orm";
 
 export async function getProfile(req: Request, res: Response) {
   try {
-
-    if(!req.user) {
+    if (!req.user) {
       return res.status(401).json({
         success: false,
         message: "Un-Authenticaed User",
@@ -14,17 +13,17 @@ export async function getProfile(req: Request, res: Response) {
     }
 
     const usersArray: IUser[] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.id, req.user.id))
-    .limit(1);
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, req.user.id))
+      .limit(1);
 
     const tempUser: IUser | undefined = usersArray[0];
-    
+
     if (!tempUser) {
       return res.status(401).json({
         success: false,
-        message: "User Not Found"
+        message: "User Not Found",
       });
     }
 
@@ -32,9 +31,8 @@ export async function getProfile(req: Request, res: Response) {
 
     return res.status(200).json({
       success: true,
-      user: safeUser
+      user: safeUser,
     });
-
   } catch (err) {
     console.error("Error in getProfile:", err);
     return res.status(500).json({
@@ -46,7 +44,6 @@ export async function getProfile(req: Request, res: Response) {
 
 export async function putBio(req: Request, res: Response) {
   try {
-    
     if (!req.user) {
       return res.status(401).json({
         success: false,
@@ -71,7 +68,7 @@ export async function putBio(req: Request, res: Response) {
     const updatedBioArray: IUser[] = await db
       .update(usersTable)
       .set({
-        bio: trimmedBio
+        bio: trimmedBio,
       })
       .where(eq(usersTable.id, req.user.id))
       .returning();
@@ -88,8 +85,7 @@ export async function putBio(req: Request, res: Response) {
     return res.status(200).json({
       success: true,
       message: "bio updated successfully",
-    })
-
+    });
   } catch (err) {
     console.error("Error in putBio:", err);
     return res.status(500).json({
@@ -116,7 +112,7 @@ export async function putUsername(req: Request, res: Response) {
     }
 
     const newUsername = username.trim();
-    if (newUsername.length > 1 || newUsername.length > 24) {
+    if (newUsername.length < 1 || newUsername.length > 24) {
       return res.status(400).json({
         success: false,
         message: "Username Must be Within 1 and 24 characters",
@@ -170,6 +166,50 @@ export async function putUsername(req: Request, res: Response) {
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
+    });
+  }
+}
+
+export async function getOtherProfile(req: Request, res: Response) {
+  try {
+    const { id } = req.params as { id: string };
+
+    // making sure id is a string
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "A valid User ID parameter is required",
+      });
+    }
+
+    const usersArray = await db
+      .select({
+        id: usersTable.id,
+        username: usersTable.username,
+        bio: usersTable.bio,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, id))
+      .limit(1);
+
+    const publicProfile = usersArray[0];
+
+    if (!publicProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: publicProfile,
+    });
+  } catch (err) {
+    console.error("Error in getOtherProfile:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
     });
   }
 }
