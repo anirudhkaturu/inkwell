@@ -213,3 +213,47 @@ export async function getOtherProfile(req: Request, res: Response) {
     });
   }
 }
+
+export async function getProfileByUsername(req: Request, res: Response) {
+
+  // have to implement pagenation in this endpoint for returning top matching usernames
+
+  try {
+    const { username }: { username: string } = req.params as { username: string };
+
+    if (!username) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Username is required" });
+    }
+
+    const usersArray = await db
+      .select({
+        id: usersTable.id,
+        username: usersTable.username,
+        bio: usersTable.bio,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.username, username.trim()))
+      .limit(1);
+
+    const publicProfile = usersArray[0];
+
+    if (!publicProfile) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({ success: true, user: publicProfile });
+  } catch (err) {
+    console.error("Error in getProfileByUsername:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+}
+
+// TODOs for this controller
+// 1. add a fall-back and search feature by username for users to find other accounts
+// 2. profile pic upload and update (bigger feature), will be paired with media system too
+// 3. public and private profiles
+// 4. ability to deactivate or delete account (later features)
